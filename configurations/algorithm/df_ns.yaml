@@ -1,0 +1,47 @@
+# Diffusion Forcing algorithm config for Navier-Stokes vorticity
+# Inherits from df_video (3D U-Net + temporal attention)
+
+defaults:
+  - df_video
+
+# Normalization (must match dataset config)
+normalization: ${dataset.normalization}
+
+# Visualization (icefire colormap)
+data_min: ${dataset.data_min}
+data_max: ${dataset.data_max}
+data_raw_std: ${dataset.data_raw_std}
+vis_vmin: -2.0
+vis_vmax: 2.0
+train_vis_every: 1000
+
+# Validation uses autoregressive (fast); override in test scripts for pyramid
+scheduling_matrix: autoregressive
+chunk_size: 1
+
+# # Use pyramid noise scheduling for validation sampling
+# scheduling_matrix: pyramid
+# chunk_size: -1
+
+
+# Disable pretrained metrics for 1-ch data
+metrics: []
+
+# ── observation guidance ──────────────────────────────
+# Test-time inverse-problem guidance.  Disabled by default.
+# Enable via:  algorithm.obs_guidance.enabled=true  in your test script.
+obs_guidance:
+  enabled: false
+  grad_scale: 1.0          # step size ζ for observation guidance correction
+  noise_sigma: 0.05        # observation noise std (in unnormalized data space)
+  gamma: 0.0               # SDA variance inflation (v3). 0 = v1 behavior. Try 0.01.
+  spectral_lambda: 0.0     # spectral regularization weight (v4). 0 = disabled.
+  spectral_ref: ""          # path to reference spectrum .pt file
+  spectral_sharpness: 5.0   # softness of frequency cutoff in diffusion-aware mask
+  operator:
+    name: identity          # identity | super_resolution | sparse_observation
+    scale_factor: 4         # for super_resolution
+    ratio: 0.05             # for sparse_observation
+    H: 128                  # image height (for sparse_observation mask)
+    W: 128                  # image width  (for sparse_observation mask)
+    seed: 42                # mask seed    (for sparse_observation)

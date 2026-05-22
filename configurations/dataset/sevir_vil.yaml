@@ -1,0 +1,35 @@
+# SEVIR-LR VIL dataset configuration
+
+defaults:
+  - base_dataset
+
+data_dir: /path/to/sevir
+
+n_frames: 49
+resolution: 128
+observation_shape: [1, "${dataset.resolution}", "${dataset.resolution}"]
+context_length: 6
+validation_multiplier: 1
+frame_skip: 1
+metadata: null
+
+# Data is already in [0, 1] (uint8 / 255).
+# minmax with data_min=0, data_max=1 is identity in the dataset class.
+# The algorithm maps [0, 1] -> [-norm_scale, norm_scale] via:
+#   data_mean = 0.5,  data_std = 0.5 / norm_scale
+# norm_scale=1 (default) → [-1, 1];  norm_scale=6 → [-6, 6], etc.
+norm_scale: 1
+data_min: 0.0
+data_max: 1.0
+
+data_mean: 0.5
+data_std: 0.5
+
+# CSI thresholds on the 0-255 scale (standard SEVIR evaluation)
+csi_thresholds: [16, 74, 133, 160, 181, 219]
+
+external_cond_dim: 0
+
+# Optional: replicate clip 0 of each trajectory M times for ensemble forecasting.
+# Active for non-training splits when > 1.  Default 1 preserves sliding-clip behaviour.
+repeat_for_ensemble: 1

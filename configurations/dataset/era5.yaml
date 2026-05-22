@@ -1,0 +1,31 @@
+# ERA5 multi-variable weather dataset configuration
+#
+# Data: 4-channel (z500, t850, u10, v10), 240x120 (lon x lat), 6-hourly
+# Already z-score normalized per channel (mean~0, std~1).
+# _normalize_x is identity (data_mean=0, data_std=1).
+
+defaults:
+  - base_dataset
+
+data_dir: /path/to/era5
+
+n_frames: 30
+resolution: 128     # for attn_resolutions computation (must be power of 2)
+observation_shape: [4, 240, 120]   # [C, H, W]
+context_length: 4
+validation_multiplier: 1
+frame_skip: 1
+metadata: null
+
+# z-score normalization: data_mean=0, data_std=1 → _normalize_x is identity
+data_mean: 0.0
+data_std: 1.0
+
+# Path to stats.pt for un-normalizing to physical units during evaluation
+stats_path: ${dataset.data_dir}/stats.pt
+
+external_cond_dim: 0
+
+# Optional: replicate clip 0 of each trajectory M times for ensemble forecasting.
+# Active for non-training splits when > 1.  Default 1 preserves sliding-clip behaviour.
+repeat_for_ensemble: 1

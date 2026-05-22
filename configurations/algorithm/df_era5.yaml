@@ -1,0 +1,34 @@
+# Diffusion Forcing algorithm config for ERA5 multi-variable weather data
+# Inherits from df_video (3D U-Net + temporal attention)
+
+defaults:
+  - df_video
+
+# Path to stats.pt for per-channel un-normalization
+stats_path: ${dataset.stats_path}
+
+# Visualization
+train_vis_every: 500
+
+# Validation uses autoregressive (fast); override in test scripts for pyramid
+scheduling_matrix: autoregressive
+chunk_size: 1
+
+# Disable pretrained metrics for 4-ch non-image data
+metrics: []
+
+# ── observation guidance ──────────────────────────────
+# Test-time inverse-problem guidance.  Disabled by default.
+# Enable via:  algorithm.obs_guidance.enabled=true  in your test script.
+obs_guidance:
+  enabled: false
+  grad_scale: 1.0          # step size ζ for observation guidance correction
+  noise_sigma: 0.05        # observation noise std (in z-score data space)
+  gamma: 0.0               # SDA variance inflation (v3). 0 = v1 behavior. Try 0.01.
+  operator:
+    name: identity          # identity | super_resolution | sparse_observation
+    scale_factor: 4         # for super_resolution
+    ratio: 0.05             # for sparse_observation
+    H: 240                  # spatial height
+    W: 120                  # spatial width
+    seed: 42                # mask seed (for sparse_observation)

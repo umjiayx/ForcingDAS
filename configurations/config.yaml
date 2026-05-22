@@ -1,0 +1,48 @@
+# configuration parsing starts here
+defaults:
+  - experiment: exp_ns # experiment yaml file name in configurations/experiments folder [fixme]
+  - dataset: ns_vorticity # dataset yaml file name in configurations/dataset folder [fixme]
+  - algorithm: df_ns # algorithm yaml file name in configurations/algorithm folder [fixme]
+  - cluster: null # optional, cluster yaml file name in configurations/cluster folder. Leave null for local compute
+
+debug: false # global debug flag will be passed into configuration of experiment, dataset and algorithm
+
+wandb:
+  entity: your_wandb_entity # wandb account name / organization name [fixme]
+  project: forcingdas # wandb project name; if not provided, defaults to root folder name [fixme]
+  mode: online # set wandb logging to online, offline or dryrun
+
+resume: null # wandb run id to resume logging and loading checkpoint from
+load: null # wanmdb run id containing checkpoint or a path to a checkpoint file
+
+# ---------------------------------------------------------------------------
+# Hydra runtime overrides
+# ---------------------------------------------------------------------------
+# Default Hydra picks `outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}` (second
+# resolution), so multiple jobs launched within the same wall-clock second --
+# common when several `setsid nohup python -m main ... &` commands are
+# triggered back-to-back from a launcher script -- collide into the same
+# output dir and overwrite each other's `test_predictions/xs_pred.pt`,
+# wandb run files, etc.
+#
+# Two-part fix:
+#   1. Append microsecond resolution (`%f`, 6 digits) to the timestamp so
+#      concurrent Python processes essentially never collide (each gets its
+#      own ${now} resolution when Hydra initialises at import time).
+#   2. Append `${hydra.job.name}` for human-readable folder names. The
+#      default is the entry-point script name ("main"); callers that want
+#      a descriptive folder pass `hydra.job.name=<TAG>` on the CLI, and
+#      end up with a folder like
+#         outputs/2026-04-30/12-34-56-789012_<TAG>
+#      (Note: we cannot use the user-config `+name=...` field here because
+#      Hydra resolves `hydra.run.dir` against the hydra-only sub-tree --
+#      user config keys are not visible from this scope.)
+#
+# Scripts that already pass an explicit `hydra.run.dir=...` keep overriding
+# this default unchanged.
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S-%f}_${hydra.job.name}
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S-%f}_${hydra.job.name}
+    subdir: ${hydra.job.num}

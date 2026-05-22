@@ -1,0 +1,44 @@
+# Diffusion Forcing + DiT backbone for SEVIR VIL
+# Inherits df_video_dit (DiT architecture), then adds SEVIR-specific settings.
+
+defaults:
+  - df_video_dit
+
+# ── DiT-L defaults (override in CLI for S/B/XL) ──
+diffusion:
+  architecture:
+    backbone: dit3d
+    hidden_size: 1024
+    depth: 24
+    num_heads: 16
+    patch_size: 4
+    mlp_ratio: 4.0
+    max_frames: 64
+    attention_type: factorized
+    use_gradient_checkpointing: True
+
+# ── SEVIR-specific (copied from df_sevir.yaml) ──
+csi_thresholds: ${dataset.csi_thresholds}
+norm_scale: ${dataset.norm_scale}
+train_vis_every: 1000
+
+scheduling_matrix: autoregressive
+chunk_size: 1
+
+metrics: []
+
+obs_guidance:
+  enabled: false
+  grad_scale: 1.0
+  noise_sigma: 0.05
+  gamma: 0.0
+  spectral_lambda: 0.0
+  spectral_ref: ""
+  spectral_sharpness: 5.0
+  operator:
+    name: identity
+    scale_factor: 4
+    ratio: 0.05
+    H: 128
+    W: 128
+    seed: 42

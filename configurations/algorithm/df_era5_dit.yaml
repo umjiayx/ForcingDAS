@@ -1,0 +1,40 @@
+# Diffusion Forcing + DiT backbone for ERA5 multi-variable weather data
+# Inherits df_video_dit (DiT architecture), then adds ERA5-specific settings.
+
+defaults:
+  - df_video_dit
+
+# ── DiT-L defaults ──
+diffusion:
+  architecture:
+    backbone: dit3d
+    hidden_size: 1024
+    depth: 24
+    num_heads: 16
+    patch_size: 4           # 240x120 -> 60x30 = 1800 patches per frame
+    mlp_ratio: 4.0
+    max_frames: 64
+    attention_type: factorized
+    use_gradient_checkpointing: True
+
+# ── ERA5-specific (copied from df_era5.yaml) ──
+stats_path: ${dataset.stats_path}
+train_vis_every: 500
+
+scheduling_matrix: autoregressive
+chunk_size: 1
+
+metrics: []
+
+obs_guidance:
+  enabled: false
+  grad_scale: 1.0
+  noise_sigma: 0.05
+  gamma: 0.0
+  operator:
+    name: identity
+    scale_factor: 4
+    ratio: 0.05
+    H: 240
+    W: 120
+    seed: 42
