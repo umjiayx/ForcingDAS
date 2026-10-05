@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ForcingDAS</title>
+  <meta name="description" content="ForcingDAS: Unified and Robust Data Assimilation via Diffusion Forcing. One trained diffusion-forcing prior that runs filtering, fixed-lag smoothing, and full-sequence smoothing, selected at inference.">
+  <meta property="og:title" content="ForcingDAS: Unified and Robust Data Assimilation via Diffusion Forcing">
+  <meta property="og:description" content="One trained model spans filtering, fixed-lag smoothing, and full-sequence smoothing, chosen at inference through the scheduling matrix.">
+  <meta property="og:image" content="https://umjiayx.github.io/ForcingDAS/static/img/ForcingDAS.webp">
+  <meta property="og:url" content="https://umjiayx.github.io/ForcingDAS/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c2410c'/><path d='M12 42c8-14 14-14 20 0s12 14 20 0' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Castoro&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}]})"></script>
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="static/anim/data.js"></script>
+  <script src="static/js/viewer.js"></script>
+</head>
+<body>
+
+<!-- ============================== header ============================== -->
+<header class="hero">
+  <div class="wrap">
+    <h1 class="title"><span class="brand">ForcingDAS</span>: Unified and Robust<br>Data Assimilation via Diffusion Forcing</h1>
+    <p class="subtitle">One trained model: filtering, fixed-lag smoothing, and full-sequence smoothing, selected at inference</p>
+    <div class="authors">
+      <a href="https://umjiayx.github.io/">Yixuan Jia</a><sup>1</sup>
+      <a href="https://csy2077.github.io/siyichen.github.io/">Siyi Chen</a><sup>1</sup>
+      <a href="https://bamb00zled82.github.io/">Yida Pan</a><sup>1</sup>
+      <a href="https://heimine.github.io/">Xiao Li</a><sup>1</sup>
+      <a href="https://shilianghe007.github.io/">Lianghe Shi</a><sup>1</sup>
+      <a href="https://sites.google.com/view/jcy132/%ED%99%88">Chanyong Jung</a><sup>1</sup>
+      <a href="https://www.linkedin.com/in/haijie-yuan-763489290/">Haijie Yuan</a><sup>2</sup><br>
+      <a href="https://sites.google.com/view/ismailalkhouri/about">Ismail Alkhouri</a><sup>3,1</sup>
+      <a href="https://name.engin.umich.edu/people/wu-yue-cynthia/">Yue Cynthia Wu</a><sup>1</sup>
+      <a href="https://sites.google.com/site/sairavishankar3/">Saiprasad Ravishankar</a><sup>2</sup>
+      <a href="https://web.eecs.umich.edu/~fessler/">Jeffrey A. Fessler</a><sup>1</sup>
+      <a href="https://qingqu.engin.umich.edu/">Qing Qu</a><sup>1</sup>
+    </div>
+    <div class="affil">
+      <span><sup>1</sup>University of Michigan, Ann Arbor</span>
+      <span><sup>2</sup>Michigan State University</span>
+      <span><sup>3</sup>Los Alamos National Laboratory</span>
+    </div>
+    <div class="links">
+      <a class="btn" href="https://arxiv.org/pdf/2605.14285">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9zM8 13h8v2H8zm0 4h8v2H8z"/></svg>Paper</a>
+      <a class="btn" href="https://arxiv.org/abs/2605.14285">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v2H4zm0 4h10v2H4zm0 4h16v2H4zm0 4h10v2H4z"/></svg>arXiv</a>
+      <a class="btn" href="https://github.com/umjiayx/ForcingDAS">
+        <svg viewBox="0 0 24 24"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.54-3.88-1.54-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code</a>
+      <a class="btn" href="#bibtex">
+        <svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg>BibTeX</a>
+    </div>
+  </div>
+
+  <div class="wrap narrow teaser">
+    <div id="teaser-anim"></div>
+    <p class="caption"><b>Long-horizon filtering on 2D Navier–Stokes.</b> Both methods run as real-time filters on
+      the same noisy observations of 5% of the pixels, after 10 clean context frames (blue border).
+      FlowDAS, which learns a frame-to-frame transition, loses the small-scale eddies after about
+      10 assimilated frames. ForcingDAS uses a joint-trajectory prior and stays close to the truth
+      over the whole 40-frame window.</p>
+  </div>
+</header>
+
+<!-- ============================== abstract ============================== -->
+<section class="soft">
+  <div class="wrap narrow">
+    <h2>Abstract</h2>
+    <p>Data assimilation (DA) estimates the state of an evolving dynamical system from noisy, partial
+      observations, and is widely used in scientific simulation as well as weather and climate science.
+      In practice, filtering methods rely on frame-to-frame transition models. However, these models
+      accumulate errors over long horizons, and they are further fragile when observations are
+      non-Markovian. At the same time, learned DA methods typically commit to a single regime, either
+      filtering (nowcasting, real-time forecasting) or smoothing (retrospective reanalysis), which splits
+      what should be a shared prior across application-specific pipelines. To address both issues, we
+      introduce <b>ForcingDAS</b>, a <em>unified</em> and <em>robust</em> DA framework. Built on Diffusion
+      Forcing with an independent noise level assigned to each frame, ForcingDAS learns a joint-trajectory
+      prior instead of frame-to-frame transitions. This allows it to capture long-horizon temporal
+      dependencies and reduce error accumulation. In addition, the same trained model spans the full
+      filtering to smoothing spectrum at inference time. Specifically, nowcasting, fixed-lag smoothing,
+      and batch reanalysis are selected through the inference schedule alone, without retraining. We
+      evaluate ForcingDAS on 2D Navier–Stokes vorticity, precipitation nowcasting, and global atmospheric
+      state estimation. Across all settings, a single model is competitive with or outperforms both
+      learned and classical baselines that are specialized for individual regimes.</p>
+  </div>
+</section>
+
+<!-- ============================== method ============================== -->
+<section>
+  <div class="wrap">
+    <h2>One Model, the Whole Filtering–Smoothing Spectrum</h2>
+    <div class="narrow">
+      <p class="lead">ForcingDAS trains a single joint-trajectory diffusion prior in which every frame carries its own
+        noise level. At inference, a scheduling matrix \(\mathbf{S}^{(u)}\) sets which diffusion step each frame is at,
+        for each denoising iteration. Changing the single scalar \(u\), the <em>uncertainty scale</em>, changes the
+        DA regime. The model is never retrained.</p>
+      $$S^{(u)}_{k,\ell} = \mathrm{clip}\big(T - \ell + u\,(k-1),\; 0,\; T\big)$$
+    </div>
+    <div class="cards">
+      <div class="card"><div class="tag">Filtering</div><h4>Nowcasting / real-time forecasting</h4>
+        <p>Each frame fully denoises before the next one starts. This gives the posterior \(p(\mathbf{x}_k\mid\mathbf{y}_{1:k})\).</p>
+        <div class="u">u = T &nbsp;·&nbsp; ForcingDAS-AR</div></div>
+      <div class="card"><div class="tag">Fixed-lag smoothing</div><h4>Sliding-window reanalysis</h4>
+        <p>About \(\lceil T/u\rceil\) frames are active at once, at staggered noise levels. Observations of later frames
+          refine the earlier frames in the window.</p>
+        <div class="u">0 &lt; u &lt; T &nbsp;·&nbsp; ForcingDAS-Pyr</div></div>
+      <div class="card"><div class="tag">Full-sequence smoothing</div><h4>Batch reanalysis</h4>
+        <p>All frames are denoised together, and every observation jointly refines every frame.</p>
+        <div class="u">u = 0 &nbsp;·&nbsp; ForcingDAS-FS</div></div>
+    </div>
+    <div class="figure" style="margin-top:18px">
+      <img src="static/img/ForcingDAS.webp" alt="ForcingDAS overview: scheduling matrices for autoregressive, pyramid and full-sequence inference, and observation-consistent sampling." loading="lazy">
+    </div>
+    <p class="caption" style="margin-top:8px"><b>ForcingDAS at a glance.</b> (a–c) The scheduling matrix (rows: denoising
+      iteration; columns: trajectory frame) selects the DA regime through \(u\). Active frames are outlined in red.
+      (d) Observation-consistent sampling: each frame's Tweedie estimate is scored against its observation with a weight
+      tied to that frame's noise level. The loss is backpropagated through the shared DiT backbone, which routes
+      gradients from later observations to earlier active frames.</p>
+
+    <div class="components">
+      <div class="card"><div class="tag">Training</div><h4>Causality-Aware Training (CAT)</h4>
+        <p>Every DA schedule is causally monotone: earlier frames are never noisier than later ones. CAT draws a
+          fraction \(\rho\) of training noise vectors from sorted, staircase patterns, so the model trains on the
+          clean-past, noisy-future conditioning it sees at inference. The remaining samples stay i.i.d. as a regularizer.</p></div>
+      <div class="card"><div class="tag">Sampling</div><h4>Noise-level-aware observation guidance</h4>
+        <p>A frame's guidance weight depends on how reliable its denoised estimate is:
+          \(w(t_k) = 1/\big(\sigma_y^2 + \gamma\,\tfrac{1-\bar\alpha_{t_k}}{\bar\alpha_{t_k}}\big)\).
+          Nearly clean frames receive strong corrections and heavily noised frames receive weak ones.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== interactive results ============================== -->
+<section class="soft" id="results">
+  <div class="wrap">
+    <h2>Side-by-Side Assimilation</h2>
+    <p class="center lead narrow">These are held-out trajectories from the paper. Every method sees the same
+      observations. Press play or drag the slider to step through frames, and switch to <i>|Error|</i> to see where each
+      method drifts. The curve shows that trajectory's per-frame error. Click the curve to jump to a frame.</p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-dom="ns" aria-selected="true">Navier–Stokes</button>
+      <button class="tab" role="tab" data-dom="sevir" aria-selected="false">SEVIR precipitation</button>
+      <button class="tab" role="tab" data-dom="era5" aria-selected="false">ERA5 global weather</button>
+    </div>
+    <div class="viewer" id="viewer-ns"></div>
+    <div class="viewer" id="viewer-sevir" hidden></div>
+    <div class="viewer" id="viewer-era5" hidden></div>
+    <p class="note">A blue outline marks clean context frames, which every method receives. ForcingDAS-AR and
+      ForcingDAS-FS are the <em>same trained model</em> run with two different scheduling matrices.</p>
+  </div>
+</section>
+
+<!-- ============================== tables ============================== -->
+<section id="tables">
+  <div class="wrap">
+    <h2>Quantitative Results</h2>
+    <p class="center lead narrow">All three benchmarks use the with-context protocol. Each entry is the mean
+      <small>± std</small> over 16 held-out trajectories or events, and every method assimilates identical
+      observations. Bold marks the best result within each regime.</p>
+
+    <h3>2D Navier–Stokes vorticity · SO-5%, 10 context frames, 40 assimilated</h3>
+    <div class="tablewrap"><table>
+      <thead>
+        <tr><th></th><th colspan="3">Filtering</th><th colspan="2">Fixed-lag smoothing</th><th colspan="3">Full-sequence smoothing</th></tr>
+        <tr><th>Metric</th><th>FlowDAS</th><th>EnKF</th><th>ForcingDAS-AR</th><th>EnKS-FL</th><th>ForcingDAS-Pyr</th><th>EnKS-FS</th><th>SDA</th><th>ForcingDAS-FS</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>NRMSE ↓</td><td>0.141<small>±0.006</small></td><td>0.108<small>±0.003</small></td><td><b>0.071</b><small>±0.004</small></td><td>0.113<small>±0.003</small></td><td><b>0.057</b><small>±0.003</small></td><td>0.116<small>±0.003</small></td><td>0.075<small>±0.002</small></td><td><b>0.067</b><small>±0.003</small></td></tr>
+        <tr><td>Spectrum err. mid-k ↓</td><td>0.607<small>±0.044</small></td><td>0.684<small>±0.009</small></td><td><b>0.160</b><small>±0.019</small></td><td>0.530<small>±0.013</small></td><td><b>0.218</b><small>±0.015</small></td><td>0.430<small>±0.016</small></td><td>0.193<small>±0.017</small></td><td><b>0.139</b><small>±0.004</small></td></tr>
+        <tr><td>Spectrum err. all-k ↓</td><td>0.617<small>±0.041</small></td><td>0.824<small>±0.019</small></td><td><b>0.215</b><small>±0.020</small></td><td>0.657<small>±0.022</small></td><td><b>0.279</b><small>±0.016</small></td><td>0.550<small>±0.023</small></td><td>0.251<small>±0.027</small></td><td><b>0.189</b><small>±0.008</small></td></tr>
+      </tbody>
+    </table></div>
+    <p class="caption">EnKF and EnKS run the exact PDE dynamics. ForcingDAS uses only a learned prior.</p>
+
+    <h3>SEVIR VIL precipitation nowcasting · 6 context frames, 43 assimilated</h3>
+    <div class="tablewrap"><table>
+      <thead>
+        <tr><th></th><th colspan="2">SO-10%</th><th colspan="2">SO-20%</th><th colspan="2">SR2x</th><th colspan="2">SR4x</th></tr>
+        <tr><th>Method</th><th>NRMSE ↓</th><th>CSI-m ↑</th><th>NRMSE ↓</th><th>CSI-m ↑</th><th>NRMSE ↓</th><th>CSI-m ↑</th><th>NRMSE ↓</th><th>CSI-m ↑</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="grp" colspan="9">Filtering</td></tr>
+        <tr><td>FlowDAS</td><td>0.616<small>±0.213</small></td><td>0.403<small>±0.020</small></td><td>0.479<small>±0.183</small></td><td>0.481<small>±0.023</small></td><td>0.363<small>±0.199</small></td><td>0.637<small>±0.017</small></td><td>0.504<small>±0.189</small></td><td>0.471<small>±0.024</small></td></tr>
+        <tr class="ours"><td>ForcingDAS-AR</td><td><b>0.330</b><small>±0.107</small></td><td><b>0.557</b><small>±0.024</small></td><td><b>0.258</b><small>±0.080</small></td><td><b>0.625</b><small>±0.020</small></td><td><b>0.199</b><small>±0.054</small></td><td><b>0.684</b><small>±0.017</small></td><td><b>0.313</b><small>±0.100</small></td><td><b>0.558</b><small>±0.026</small></td></tr>
+        <tr><td class="grp" colspan="9">Fixed-lag smoothing</td></tr>
+        <tr class="ours"><td>ForcingDAS-Pyr</td><td>0.293<small>±0.093</small></td><td>0.584<small>±0.021</small></td><td>0.214<small>±0.063</small></td><td>0.671<small>±0.017</small></td><td>0.164<small>±0.046</small></td><td>0.720<small>±0.014</small></td><td>0.279<small>±0.087</small></td><td>0.559<small>±0.026</small></td></tr>
+        <tr><td class="grp" colspan="9">Full-sequence smoothing</td></tr>
+        <tr><td>SDA</td><td>0.307<small>±0.099</small></td><td>0.573<small>±0.021</small></td><td>0.243<small>±0.079</small></td><td>0.639<small>±0.017</small></td><td>0.215<small>±0.077</small></td><td>0.667<small>±0.015</small></td><td>0.327<small>±0.109</small></td><td>0.551<small>±0.021</small></td></tr>
+        <tr class="ours"><td>ForcingDAS-FS</td><td><b>0.274</b><small>±0.080</small></td><td><b>0.592</b><small>±0.021</small></td><td><b>0.219</b><small>±0.062</small></td><td><b>0.662</b><small>±0.017</small></td><td><b>0.169</b><small>±0.046</small></td><td><b>0.712</b><small>±0.014</small></td><td><b>0.269</b><small>±0.076</small></td><td><b>0.585</b><small>±0.022</small></td></tr>
+      </tbody>
+    </table></div>
+    <p class="caption">CSI-m is the Critical Success Index averaged over VIL thresholds {16, 74, 133, 160, 181, 219}, pooled over
+      events and frames. Its ± is the std over bootstrap resamples of the events.</p>
+
+    <h3>ERA5 global atmospheric state estimation · SO-10%, 6 context frames, 24 assimilated</h3>
+    <div class="tablewrap"><table>
+      <thead>
+        <tr><th></th><th colspan="2">Z500</th><th colspan="2">T850</th><th colspan="2">U10</th><th colspan="2">V10</th></tr>
+        <tr><th>Method</th><th>NRMSE ↓</th><th>ACC ↑</th><th>NRMSE ↓</th><th>ACC ↑</th><th>NRMSE ↓</th><th>ACC ↑</th><th>NRMSE ↓</th><th>ACC ↑</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="grp" colspan="9">Filtering</td></tr>
+        <tr><td>3D-Var</td><td>0.067<small>±0.003</small></td><td>0.964<small>±0.004</small></td><td>0.114<small>±0.003</small></td><td>0.868<small>±0.020</small></td><td>0.478<small>±0.015</small></td><td>0.792<small>±0.012</small></td><td>0.536<small>±0.014</small></td><td>0.810<small>±0.012</small></td></tr>
+        <tr><td>FlowDAS</td><td>0.035<small>±0.001</small></td><td>0.990<small>±0.001</small></td><td>0.070<small>±0.001</small></td><td>0.948<small>±0.007</small></td><td>0.206<small>±0.005</small></td><td>0.958<small>±0.002</small></td><td>0.249<small>±0.005</small></td><td>0.956<small>±0.004</small></td></tr>
+        <tr class="ours"><td>ForcingDAS-AR</td><td><b>0.026</b><small>±0.000</small></td><td><b>0.994</b><small>±0.001</small></td><td><b>0.054</b><small>±0.001</small></td><td><b>0.970</b><small>±0.004</small></td><td><b>0.159</b><small>±0.003</small></td><td><b>0.975</b><small>±0.001</small></td><td><b>0.193</b><small>±0.004</small></td><td><b>0.974</b><small>±0.002</small></td></tr>
+        <tr><td class="grp" colspan="9">Fixed-lag smoothing</td></tr>
+        <tr class="ours"><td>ForcingDAS-Pyr</td><td>0.023<small>±0.001</small></td><td>0.996<small>±0.000</small></td><td>0.048<small>±0.001</small></td><td>0.976<small>±0.003</small></td><td>0.148<small>±0.003</small></td><td>0.979<small>±0.001</small></td><td>0.181<small>±0.004</small></td><td>0.977<small>±0.002</small></td></tr>
+        <tr><td class="grp" colspan="9">Full-sequence smoothing</td></tr>
+        <tr><td>Tensor-Var</td><td>0.034<small>±0.001</small></td><td>0.990<small>±0.001</small></td><td>0.063<small>±0.002</small></td><td>0.957<small>±0.005</small></td><td>0.155<small>±0.003</small></td><td>0.976<small>±0.001</small></td><td>0.184<small>±0.003</small></td><td>0.976<small>±0.002</small></td></tr>
+        <tr class="ours"><td>ForcingDAS-FS</td><td><b>0.022</b><small>±0.001</small></td><td><b>0.996</b><small>±0.000</small></td><td><b>0.049</b><small>±0.001</small></td><td><b>0.975</b><small>±0.003</small></td><td><b>0.149</b><small>±0.003</small></td><td><b>0.978</b><small>±0.001</small></td><td><b>0.182</b><small>±0.004</small></td><td><b>0.977</b><small>±0.002</small></td></tr>
+      </tbody>
+    </table></div>
+    <p class="caption">NRMSE is latitude-weighted and in z-score units. ACC is computed against the WeatherBench2
+      1990–2019 climatology. The 16 trajectories are drawn from the held-out 2016 evaluation year.</p>
+  </div>
+</section>
+
+<!-- ============================== paper figures ============================== -->
+<section class="soft">
+  <div class="wrap">
+    <h2>Figures from the Paper</h2>
+    <div class="figure"><img src="static/img/ns_sevir_combined.webp" alt="Navier–Stokes and SEVIR qualitative comparison with per-frame error curves" loading="lazy"></div>
+    <p class="caption" style="margin-top:8px"><b>Navier–Stokes (left) and SEVIR (right).</b> Rows show the
+      ground truth and each method's estimate at selected frames. Below are per-frame error curves, as the mean ± 1 s.d.
+      over all 16 held-out trajectories. The per-step learned filter's error grows over the window, while ForcingDAS's
+      stays flat.</p>
+    <div class="figure" style="margin-top:22px"><img src="static/img/era5_comparison_ctx_traj0_all.webp" alt="ERA5 comparison of ForcingDAS and Tensor-Var for Z500, T850, U10, V10" loading="lazy"></div>
+    <p class="caption" style="margin-top:8px"><b>ERA5, all four variables.</b> ForcingDAS-FS vs. Tensor-Var, both run as
+      full-sequence smoothers. The bottom row is the power spectrum along latitude. ForcingDAS follows the true
+      spectrum up to the highest wavenumbers.</p>
+  </div>
+</section>
+
+<!-- ============================== bibtex ============================== -->
+<section id="bibtex">
+  <div class="wrap narrow">
+    <h2>BibTeX</h2>
+    <pre class="bib"><button class="copy" data-target="bibcode">Copy</button><code id="bibcode">@article{jia2026forcingdas,
+  title   = {ForcingDAS: Unified and Robust Data Assimilation via Diffusion Forcing},
+  author  = {Jia, Yixuan and Chen, Siyi and Pan, Yida and Li, Xiao and Shi, Lianghe and
+             Jung, Chanyong and Yuan, Haijie and Alkhouri, Ismail and Wu, Yue Cynthia and
+             Ravishankar, Saiprasad and Fessler, Jeffrey A. and Qu, Qing},
+  journal = {arXiv preprint arXiv:2605.14285},
+  year    = {2026}
+}</code></pre>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Page layout inspired by the <a href="https://daps-inverse-problem.github.io/">DAPS</a> and
+    <a href="https://nerfies.github.io/">Nerfies</a> project pages.
+  </div>
+</footer>
+</body>
+</html>
