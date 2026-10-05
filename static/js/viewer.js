@@ -303,25 +303,33 @@
 
   /* ---------------------------------------------------------------- teaser */
   function buildTeaser(root) {
-    const M = A.ns, T = M.T, ctx = M.ctx;
-    const keys = ["gt", "flowdas", "forcingdas_ar"];
-    const names = { gt: "Ground truth", flowdas: "FlowDAS (filter)", forcingdas_ar: "ForcingDAS (filter)" };
-    const row = el("div", "mrow");
+    const M = A.sevir, T = M.T, ctx = M.ctx;
+    const keys = ["obs", "gt", "flowdas", "forcingdas_ar"];
+    const names = { obs: "Observation y (10% of pixels)", gt: "Ground truth",
+                    flowdas: "FlowDAS (filter)", forcingdas_ar: "ForcingDAS (filter)" };
+    const row = el("div", "mrow four");
     const tiles = keys.map((k) => {
       const tl = tileNode(names[k], { W: M.W, H: M.H, T, ours: k === "forcingdas_ar" });
       row.appendChild(tl.node);
       return [k, tl];
     });
     root.appendChild(row);
-    const player = new Player(T, (k) => tiles.forEach(([key, tl]) => {
-      setFrame(tl.img, k, T);
-      tl.img.classList.toggle("ctx", k < ctx);
-      const nr = M.nrmse[key];
-      tl.val.textContent = k < ctx ? "context · k=" + k : (nr ? "NRMSE " + fmt(nr[k]) : "k=" + k);
-    }));
-    player.fps = 7; player.playing = true;
+    const clock = el("div", "teaser-clock");
+    root.appendChild(clock);
+    const player = new Player(T, (k) => {
+      tiles.forEach(([key, tl]) => {
+        setFrame(tl.img, k, T);
+        tl.img.classList.toggle("ctx", k < ctx);
+        const nr = M.nrmse[key];
+        tl.val.textContent = nr && k >= ctx ? "NRMSE " + nr[k].toFixed(2) : "";
+      });
+      clock.innerHTML = k < ctx
+        ? `<span class="ctxbadge">clean context</span> · frame ${k + 1} of ${ctx}`
+        : `assimilating · +${(k - ctx + 1) * 5} min (frame ${k - ctx + 1} of ${T - ctx})`;
+    });
+    player.fps = 6; player.playing = true;
     observe(root, player, () => tiles.forEach(([key, tl]) => {
-      tl.img.style.backgroundImage = `url(${BASE}ns/${key}_field.webp)`;
+      tl.img.style.backgroundImage = `url(${BASE}sevir/${key}_field.webp)`;
     }));
     player.set(0);
   }

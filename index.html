@@ -7,7 +7,7 @@
   <meta name="description" content="ForcingDAS: Unified and Robust Data Assimilation via Diffusion Forcing. One trained diffusion-forcing prior that runs filtering, fixed-lag smoothing, and full-sequence smoothing, selected at inference.">
   <meta property="og:title" content="ForcingDAS: Unified and Robust Data Assimilation via Diffusion Forcing">
   <meta property="og:description" content="One trained model spans filtering, fixed-lag smoothing, and full-sequence smoothing, chosen at inference through the scheduling matrix.">
-  <meta property="og:image" content="https://umjiayx.github.io/ForcingDAS/static/img/ForcingDAS.webp">
+  <meta property="og:image" content="https://umjiayx.github.io/ForcingDAS/static/img/sevir_headline.png">
   <meta property="og:url" content="https://umjiayx.github.io/ForcingDAS/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23c2410c'/><path d='M12 42c8-14 14-14 20 0s12 14 20 0' stroke='white' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
@@ -62,11 +62,13 @@
 
   <div class="wrap narrow teaser">
     <div id="teaser-anim"></div>
-    <p class="caption"><b>Long-horizon filtering on 2D Navier–Stokes.</b> Both methods run as real-time filters on
-      the same noisy observations of 5% of the pixels, after 10 clean context frames (blue border).
-      FlowDAS, which learns a frame-to-frame transition, loses the small-scale eddies after about
-      10 assimilated frames. ForcingDAS uses a joint-trajectory prior and stays close to the truth
-      over the whole 40-frame window.</p>
+    <p class="caption"><b>Long-horizon precipitation nowcasting on SEVIR.</b> Both methods run as real-time filters
+      on the same noisy radar observations of 10% of the pixels, after 6 clean context frames (blue border), and
+      then assimilate 43 frames at 5-minute cadence (3.6 hours). FlowDAS learns a frame-to-frame transition, and its
+      error grows steadily (NRMSE 0.18 → 0.91 on this storm). ForcingDAS uses a joint-trajectory prior and stays
+      close to the truth (0.17 → 0.42). Over all 16 held-out events it roughly halves FlowDAS's NRMSE and is better on
+      every event (<a href="#tables">table</a>).
+      <a href="static/img/sevir_headline.gif" download>Download as GIF</a>.</p>
   </div>
 </header>
 
@@ -101,7 +103,8 @@
       <p class="lead">ForcingDAS trains a single joint-trajectory diffusion prior in which every frame carries its own
         noise level. At inference, a scheduling matrix \(\mathbf{S}^{(u)}\) sets which diffusion step each frame is at,
         for each denoising iteration. Changing the single scalar \(u\), the <em>uncertainty scale</em>, changes the
-        DA regime. The model is never retrained.</p>
+        DA regime: filtering, fixed-lag smoothing and full-sequence smoothing become points on one continuum.
+        The model is never retrained.</p>
       $$S^{(u)}_{k,\ell} = \mathrm{clip}\big(T - \ell + u\,(k-1),\; 0,\; T\big)$$
     </div>
     <div class="cards">
@@ -146,12 +149,12 @@
       observations. Press play or drag the slider to step through frames, and switch to <i>|Error|</i> to see where each
       method drifts. The curve shows that trajectory's per-frame error. Click the curve to jump to a frame.</p>
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-dom="ns" aria-selected="true">Navier–Stokes</button>
-      <button class="tab" role="tab" data-dom="sevir" aria-selected="false">SEVIR precipitation</button>
+      <button class="tab" role="tab" data-dom="sevir" aria-selected="true">SEVIR precipitation</button>
+      <button class="tab" role="tab" data-dom="ns" aria-selected="false">Navier–Stokes</button>
       <button class="tab" role="tab" data-dom="era5" aria-selected="false">ERA5 global weather</button>
     </div>
-    <div class="viewer" id="viewer-ns"></div>
-    <div class="viewer" id="viewer-sevir" hidden></div>
+    <div class="viewer" id="viewer-sevir"></div>
+    <div class="viewer" id="viewer-ns" hidden></div>
     <div class="viewer" id="viewer-era5" hidden></div>
     <p class="note">A blue outline marks clean context frames, which every method receives. ForcingDAS-AR and
       ForcingDAS-FS are the <em>same trained model</em> run with two different scheduling matrices.</p>

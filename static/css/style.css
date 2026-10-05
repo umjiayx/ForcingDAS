@@ -96,7 +96,7 @@ p { margin: 0 0 14px; }
 .btn svg { width: 17px; height: 17px; fill: currentColor; }
 
 /* ---------- teaser ---------- */
-.teaser { margin-top: 20px; }
+.teaser { margin-top: 20px; max-width: 980px; }
 .teaser .caption { margin-top: 12px; }
 .caption { color: var(--text-soft); font-size: 0.93rem; line-height: 1.5; }
 .caption b { color: var(--text); }
@@ -129,6 +129,9 @@ p { margin: 0 0 14px; }
 .refcol, .methods { display: grid; gap: 10px; align-content: start; }
 .mrow-label { font-size: 0.78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--text-mute); margin: 2px 0 -4px; }
 .mrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.mrow.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.teaser-clock { text-align: center; font-size: 0.9rem; color: var(--text-soft); margin-top: 8px; font-variant-numeric: tabular-nums; }
+.teaser-clock .ctxbadge, .frame-label .ctxbadge { color: var(--ctx); font-weight: 700; }
 .tile figure { margin: 0; }
 .tile .img {
   position: relative; width: 100%; border-radius: 6px; overflow: hidden;
@@ -192,6 +195,6 @@ footer { padding: 28px 0 40px; text-align: center; color: var(--text-mute); font
   .cards, .components { grid-template-columns: 1fr; }
   .grid { grid-template-columns: 1fr; }
   .refcol { grid-template-columns: 1fr 1fr; }
-  .mrow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mrow, .mrow.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .frame-label { min-width: 0; }
 }
